@@ -6,17 +6,17 @@ import java.util.LinkedList;
  */
 public class Pieces extends ChessBoard {
     // Board position (square coordinates)
-    int xBoardPosition;
-    int yBoardPosition;
+    int xp;
+    int yp;
     // Pixel position (for drawing)
-    int xPixelPosition;
-    int yPixelPosition;
+    int x;
+    int y;
 
     // Static: true if it's white's turn, false if black's
-    public static boolean isWhiteTurn;
+    public static boolean color;
 
     // Piece properties
-    boolean isWhitePiece;
+    boolean isWhite;
     LinkedList<Pieces> ps;
     String name;
     JFrame winScreen;
@@ -37,35 +37,28 @@ public class Pieces extends ChessBoard {
 
     /**
      * Constructor for a chess piece.
-     * @param xBoardPosition x position (0-7)
-     * @param yBoardPosition y position (0-7)
-     * @param isWhitePiece true if white, false if black
-     * @param name piece name ("pawn", "rook", etc.)
+     * @param xp x position (0-7)
+     * @param yp y position (0-7)
+     * @param isWhite true if white, false if black
+     * @param n piece name ("pawn", "rook", etc.)
      * @param points point value for scoring
-     * @param piecesLinkedList list of all pieces
+     * @param ps list of all pieces
      */
-    public Pieces(int xBoardPosition, int yBoardPosition, boolean isWhitePiece, String name, int points, LinkedList<Pieces> piecesLinkedList) {
-        this.xBoardPosition = xBoardPosition;
-        xPixelPosition = xBoardPosition * 64;
-
-        this.yBoardPosition = yBoardPosition;
-        yPixelPosition = yBoardPosition * 64;
-
-        this.isWhitePiece = isWhitePiece;
-
-        this.name = name;
-        this.pointsWorth = points;
-
-        this.ps = piecesLinkedList;
-        piecesLinkedList.add(this);
-
-        isWhiteTurn = true;
-
+    public Pieces(int xp, int yp, boolean isWhite, String n, int points, LinkedList<Pieces> ps) {
+        this.xp = xp;
+        this.yp = yp;
+        x = xp * 64;
+        y = yp * 64;
+        this.isWhite = isWhite;
+        this.ps = ps;
+        name = n;
+        ps.add(this);
+        color = true;
         winScreen = new JFrame();
         restart = new JButton();
         winText = new JLabel();
-        winColor = "";
-
+        winColor = new String();
+        pointsWorth = points;
         blackScore = 0;
         whiteScore = 0;
     }
@@ -77,7 +70,7 @@ public class Pieces extends ChessBoard {
      */
     public void move(int xp, int yp) {
         // Pawn promotion
-        if (name.equalsIgnoreCase("pawn") && ((isWhitePiece && yp == 0) || (!isWhitePiece && yp == 7))) {
+        if (name.equalsIgnoreCase("pawn") && ((isWhite && yp == 0) || (!isWhite && yp == 7))) {
             // Show promotion dialog
             String[] options = {"Queen", "Rook", "Bishop", "Knight"};
             int choice = JOptionPane.showOptionDialog(null, "Choose promotion:", "Pawn Promotion",
@@ -88,24 +81,24 @@ public class Pieces extends ChessBoard {
             else this.name = "queen";
         }
         // Castling logic
-        if (name.equalsIgnoreCase("king") && Math.abs(xp - this.xBoardPosition) == 2) {
+        if (name.equalsIgnoreCase("king") && Math.abs(xp - this.xp) == 2) {
             // Kingside
-            if (xp > this.xBoardPosition) {
+            if (xp > this.xp) {
                 for (Pieces p : ps) {
-                    if (p.name.equalsIgnoreCase("rook") && p.isWhitePiece == isWhitePiece && p.xBoardPosition == 7 && !p.hasMoved) {
-                        p.xBoardPosition = 5;
-                        p.xPixelPosition = 5 * 64;
+                    if (p.name.equalsIgnoreCase("rook") && p.isWhite == isWhite && p.xp == 7 && !p.hasMoved) {
+                        p.xp = 5;
+                        p.x = 5 * 64;
                         p.hasMoved = true;
                         break;
                     }
                 }
             }
             // Queenside
-            if (xp < this.xBoardPosition) {
+            if (xp < this.xp) {
                 for (Pieces p : ps) {
-                    if (p.name.equalsIgnoreCase("rook") && p.isWhitePiece == isWhitePiece && p.xBoardPosition == 0 && !p.hasMoved) {
-                        p.xBoardPosition = 3;
-                        p.xPixelPosition = 3 * 64;
+                    if (p.name.equalsIgnoreCase("rook") && p.isWhite == isWhite && p.xp == 0 && !p.hasMoved) {
+                        p.xp = 3;
+                        p.x = 3 * 64;
                         p.hasMoved = true;
                         break;
                     }
@@ -117,20 +110,20 @@ public class Pieces extends ChessBoard {
         // En passant logic
         if (name.equalsIgnoreCase("pawn")) {
             // Double move
-            if (Math.abs(yp - this.yBoardPosition) == 2) {
+            if (Math.abs(yp - this.yp) == 2) {
                 lastPawnDoubleMoveX = xp;
                 lastPawnDoubleMoveY = yp;
-                lastPawnDoubleMoveIsWhite = isWhitePiece;
+                lastPawnDoubleMoveIsWhite = isWhite;
             } else {
                 lastPawnDoubleMoveX = -1;
                 lastPawnDoubleMoveY = -1;
             }
             // En passant capture
-            if (Math.abs(xp - this.xBoardPosition) == 1 && yp - this.yBoardPosition == (isWhitePiece ? -1 : 1) && ChessBoard.getPiece(xp * 64, yp * 64) == null) {
+            if (Math.abs(xp - this.xp) == 1 && yp - this.yp == (isWhite ? -1 : 1) && ChessBoard.getPiece(xp * 64, yp * 64) == null) {
                 // Remove the captured pawn
                 Pieces captured = null;
                 for (Pieces p : ps) {
-                    if (p.name.equalsIgnoreCase("pawn") && p.xBoardPosition == xp && p.yBoardPosition == (isWhitePiece ? yp + 1 : yp - 1) && p.isWhitePiece != isWhitePiece) {
+                    if (p.name.equalsIgnoreCase("pawn") && p.xp == xp && p.yp == (isWhite ? yp + 1 : yp - 1) && p.isWhite != isWhite) {
                         captured = p;
                         break;
                     }
@@ -145,7 +138,7 @@ public class Pieces extends ChessBoard {
         // Remove captured piece (except king, which cannot be captured)
         Pieces captured = ChessBoard.getPiece(xp * 64, yp * 64);
         if (captured != null && !captured.name.equalsIgnoreCase("king")) {
-            if (captured.isWhitePiece) {
+            if (captured.isWhite) {
                 blackScore += captured.pointsWorth;
             } else {
                 whiteScore += captured.pointsWorth;
@@ -160,23 +153,24 @@ public class Pieces extends ChessBoard {
         lastColor();
 
         // Update position
-        this.xBoardPosition = xp;
-        this.yBoardPosition = yp;
-        xPixelPosition = xp * 64;
-        yPixelPosition = yp * 64;
+        this.xp = xp;
+        this.yp = yp;
+        x = xp * 64;
+        y = yp * 64;
     }
 
     /**
      * Remove this piece from the board and update score.
      */
     public void kill() {
-        if (ChessBoard.getPiece(xBoardPosition * 64, yBoardPosition * 64).isWhitePiece) {
-            blackScore += Pieces.getPiece(xBoardPosition * 64, yBoardPosition * 64).pointsWorth;
+        if (ChessBoard.getPiece(xp * 64, yp * 64).isWhite == true) {
+            blackScore += Pieces.getPiece(xp * 64, yp * 64).pointsWorth;
+            trackerScreen();
         } else {
-            whiteScore += Pieces.getPiece(xBoardPosition * 64, yBoardPosition * 64).pointsWorth;
+            whiteScore += Pieces.getPiece(xp * 64, yp * 64).pointsWorth;
+            trackerScreen();
         }
-        trackerScreen();
-        size -= 1;
+        size = size - 1;
         ps.remove(this);
     }
 
@@ -184,145 +178,141 @@ public class Pieces extends ChessBoard {
      * Switch turn after a move.
      */
     public void lastColor() {
-        isWhiteTurn = !isWhiteTurn;
+        color = !color;
     }
 
     /**
      * Chess movement logic for all pieces, including all rules and king-capture prevention.
-     * @param xDest destination x
-     * @param yDest destination y
+     * @param toX destination x
+     * @param toY destination y
      * @param ignoreKingBlock if true, allow moves that would capture the king (for check detection)
      * @return true if the move is legal
      */
-    public boolean canMove(int xDest, int yDest, boolean ignoreKingBlock) {
-        // Move must be nonzero
-        if (xDest == xBoardPosition && yDest == yBoardPosition) return false;
-        // Move must be on board
-        if (xDest < 0 || xDest > 7 || yDest < 0 || yDest > 7) return false;
-
-        Pieces destPiece = ChessBoard.getPiece(xDest * 64, yDest * 64);
+    public boolean canMove(int toX, int toY, boolean ignoreKingBlock) {
+        if (toX == xp && toY == yp) return false;
+        if (toX < 0 || toX > 7 || toY < 0 || toY > 7) return false;
+        Pieces dest = ChessBoard.getPiece(toX * 64, toY * 64);
         // Prevent capturing the king (unless for check detection)
-        if (!ignoreKingBlock && destPiece != null && destPiece.name.equalsIgnoreCase("king")) return false;
-        if (destPiece != null && destPiece.isWhitePiece == this.isWhitePiece) return false;
-        int xDiff = xDest - xBoardPosition;
-        int yDiff = yDest - yBoardPosition;
+        if (!ignoreKingBlock && dest != null && dest.name.equalsIgnoreCase("king")) return false;
+        if (dest != null && dest.isWhite == this.isWhite) return false;
+        int dx = toX - xp;
+        int dy = toY - yp;
         switch (name.toLowerCase()) {
             case "pawn":
-                int dir = isWhitePiece ? -1 : 1;
+                int dir = isWhite ? -1 : 1;
                 // Move forward
-                if (xDiff == 0 && yDiff == dir && destPiece == null) return true;
+                if (dx == 0 && dy == dir && dest == null) return true;
                 // Double move from start
-                if (xDiff == 0 && yDiff == 2 * dir && destPiece == null && ChessBoard.getPiece(xBoardPosition * 64, (yBoardPosition + dir) * 64) == null && ((isWhitePiece && yBoardPosition == 6) || (!isWhitePiece && yBoardPosition == 1))) return true;
+                if (dx == 0 && dy == 2 * dir && dest == null && ChessBoard.getPiece(xp * 64, (yp + dir) * 64) == null && ((isWhite && yp == 6) || (!isWhite && yp == 1))) return true;
                 // Capture
-                if (Math.abs(xDiff) == 1 && yDiff == dir && destPiece != null && destPiece.isWhitePiece != isWhitePiece) return true;
+                if (Math.abs(dx) == 1 && dy == dir && dest != null && dest.isWhite != isWhite) return true;
                 // En passant
-                if (Math.abs(xDiff) == 1 && yDiff == dir && destPiece == null &&
-                    lastPawnDoubleMoveX == xDest && lastPawnDoubleMoveY == (isWhitePiece ? yDest + 1 : yDest - 1) && lastPawnDoubleMoveIsWhite != isWhitePiece) return true;
+                if (Math.abs(dx) == 1 && dy == dir && dest == null &&
+                    lastPawnDoubleMoveX == toX && lastPawnDoubleMoveY == (isWhite ? toY + 1 : toY - 1) && lastPawnDoubleMoveIsWhite != isWhite) return true;
                 return false;
             case "rook":
-                int xStepParallel = Integer.signum(xDiff);
-                int yStepParallel = Integer.signum(yDiff);
-                int xInc = xBoardPosition + xStepParallel, yInc = yBoardPosition + yStepParallel;
-                while (xInc != xDest || yInc != yDest) {
-                    if (ChessBoard.getPiece(xInc * 64, yInc * 64) != null) return false;
-                    xInc += xStepParallel;
-                    yInc += yStepParallel;
+                if (dx != 0 && dy != 0) return false;
+                int stepX = Integer.signum(dx);
+                int stepY = Integer.signum(dy);
+                int x = xp + stepX, y = yp + stepY;
+                while (x != toX || y != toY) {
+                    if (ChessBoard.getPiece(x * 64, y * 64) != null) return false;
+                    x += stepX;
+                    y += stepY;
                 }
                 return true;
             case "knight":
-                return (Math.abs(xDiff) == 2 && Math.abs(yDiff) == 1) || (Math.abs(xDiff) == 1 && Math.abs(yDiff) == 2);
+                return (Math.abs(dx) == 2 && Math.abs(dy) == 1) || (Math.abs(dx) == 1 && Math.abs(dy) == 2);
             case "bishop":
-                if (Math.abs(xDiff) != Math.abs(yDiff)) return false;
-                int xStepDiagonal = Integer.signum(xDiff);
-                int yStepDiagonal = Integer.signum(yDiff);
-                xInc = xBoardPosition + xStepDiagonal; yInc = yBoardPosition + yStepDiagonal;
-                while (xInc != xDest && yInc != yDest) {
-                    if (ChessBoard.getPiece(xInc * 64, yInc * 64) != null) return false;
-                    xInc += xStepDiagonal;
-                    yInc += yStepDiagonal;
+                if (Math.abs(dx) != Math.abs(dy)) return false;
+                int stepx = Integer.signum(dx);
+                int stepy = Integer.signum(dy);
+                x = xp + stepx; y = yp + stepy;
+                while (x != toX && y != toY) {
+                    if (ChessBoard.getPiece(x * 64, y * 64) != null) return false;
+                    x += stepx;
+                    y += stepy;
                 }
                 return true;
             case "queen":
-                if (xDiff == 0 || yDiff == 0) {
+                if (dx == 0 || dy == 0) {
                     // Rook-like move
-                    xStepParallel = Integer.signum(xDiff);
-                    yStepParallel = Integer.signum(yDiff);
-                    xInc = xBoardPosition + xStepParallel; yInc = yBoardPosition + yStepParallel;
-                    while (xInc != xDest || yInc != yDest) {
-                        if (ChessBoard.getPiece(xInc * 64, yInc * 64) != null) return false;
-                        xInc += xStepParallel;
-                        yInc += yStepParallel;
+                    stepX = Integer.signum(dx);
+                    stepY = Integer.signum(dy);
+                    x = xp + stepX; y = yp + stepY;
+                    while (x != toX || y != toY) {
+                        if (ChessBoard.getPiece(x * 64, y * 64) != null) return false;
+                        x += stepX;
+                        y += stepY;
                     }
                     return true;
-                } else if (Math.abs(xDiff) == Math.abs(yDiff)) {
+                } else if (Math.abs(dx) == Math.abs(dy)) {
                     // Bishop-like move
-                    xStepDiagonal = Integer.signum(xDiff);
-                    yStepDiagonal = Integer.signum(yDiff);
-                    xInc = xBoardPosition + xStepDiagonal; yInc = yBoardPosition + yStepDiagonal;
-                    while (xInc != xDest && yInc != yDest) {
-                        if (ChessBoard.getPiece(xInc * 64, yInc * 64) != null) return false;
-                        xInc += xStepDiagonal;
-                        yInc += yStepDiagonal;
+                    stepx = Integer.signum(dx);
+                    stepy = Integer.signum(dy);
+                    x = xp + stepx; y = yp + stepy;
+                    while (x != toX && y != toY) {
+                        if (ChessBoard.getPiece(x * 64, y * 64) != null) return false;
+                        x += stepx;
+                        y += stepy;
                     }
                     return true;
                 }
                 return false;
             case "king":
                 // Castling
-                if (!hasMoved && yDiff == 0 && Math.abs(xDiff) == 2) {
+                if (!hasMoved && dy == 0 && Math.abs(dx) == 2) {
                     // Kingside
-                    if (xDiff == 2) {
-                        // Find the rook, must not have moved
+                    if (dx == 2) {
                         Pieces rook = null;
                         for (Pieces p : ps) {
-                            if (p.name.equalsIgnoreCase("rook") && p.isWhitePiece == isWhitePiece && p.xBoardPosition == 7 && !p.hasMoved) rook = p;
+                            if (p.name.equalsIgnoreCase("rook") && p.isWhite == isWhite && p.xp == 7 && !p.hasMoved) rook = p;
                         }
                         if (rook == null) return false;
-
                         // Squares between king and rook must be empty
-                        for (int xIncrement = xBoardPosition + 1; xIncrement < 7; xIncrement++) {
-                            if (ChessBoard.getPiece(xIncrement * 64, yBoardPosition * 64) != null) return false;
+                        for (int xx = xp + 1; xx < 7; xx++) {
+                            if (ChessBoard.getPiece(xx * 64, yp * 64) != null) return false;
                         }
                         // King must not be in check, pass through check, or end in check
-                        for (int xIncrement = xBoardPosition; xIncrement <= xBoardPosition + 2; xIncrement++) {
-                            int xBoardOriginal = this.xBoardPosition, xPixelOriginal = this.xPixelPosition;
-                            this.xBoardPosition = xIncrement; this.xPixelPosition = xIncrement * 64;
-                            boolean inCheck = ChessBoard.isKingInCheck(isWhitePiece);
-                            this.xBoardPosition = xBoardOriginal; this.xPixelPosition = xPixelOriginal;
+                        for (int xx = xp; xx <= xp + 2; xx++) {
+                            int oldX = this.xp, oldx = this.x;
+                            this.xp = xx; this.x = xx * 64;
+                            boolean inCheck = ChessBoard.isKingInCheck(isWhite);
+                            this.xp = oldX; this.x = oldx;
                             if (inCheck) return false;
                         }
                         return true;
                     }
                     // Queenside
-                    if (xDiff == -2) {
+                    if (dx == -2) {
                         Pieces rook = null;
                         for (Pieces p : ps) {
-                            if (p.name.equalsIgnoreCase("rook") && p.isWhitePiece == isWhitePiece && p.xBoardPosition == 0 && !p.hasMoved) rook = p;
+                            if (p.name.equalsIgnoreCase("rook") && p.isWhite == isWhite && p.xp == 0 && !p.hasMoved) rook = p;
                         }
                         if (rook == null) return false;
                         // Squares between king and rook must be empty
-                        for (int xx = xBoardPosition - 1; xx > 0; xx--) {
-                            if (ChessBoard.getPiece(xx * 64, yBoardPosition * 64) != null) return false;
+                        for (int xx = xp - 1; xx > 0; xx--) {
+                            if (ChessBoard.getPiece(xx * 64, yp * 64) != null) return false;
                         }
                         // King must not be in check, pass through check, or end in check
-                        for (int xIncrement = xBoardPosition; xIncrement >= xBoardPosition - 2; xIncrement--) {
-                            int xBoardOriginal = this.xBoardPosition, xPixelOriginal = this.xPixelPosition;
-                            this.xBoardPosition = xIncrement; this.xPixelPosition = xIncrement * 64;
-                            boolean inCheck = ChessBoard.isKingInCheck(isWhitePiece);
-                            this.xBoardPosition = xBoardOriginal; this.xPixelPosition = xPixelOriginal;
+                        for (int xx = xp; xx >= xp - 2; xx--) {
+                            int oldX = this.xp, oldx = this.x;
+                            this.xp = xx; this.x = xx * 64;
+                            boolean inCheck = ChessBoard.isKingInCheck(isWhite);
+                            this.xp = oldX; this.x = oldx;
                             if (inCheck) return false;
                         }
                         return true;
                     }
                 }
                 // Normal king move (one square in any direction)
-                return Math.abs(xDiff) <= 1 && Math.abs(yDiff) <= 1;
+                return Math.abs(dx) <= 1 && Math.abs(dy) <= 1;
         }
         return false;
     }
 
     // For backward compatibility, keep the old canMove signature
-    public boolean canMove(int xDest, int yDest) {
-        return canMove(xDest, yDest, false);
+    public boolean canMove(int toX, int toY) {
+        return canMove(toX, toY, false);
     }
 }
