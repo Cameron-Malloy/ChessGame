@@ -189,7 +189,7 @@ public class ChessBoard extends JPanel {
                 // Draw legal move highlights
                 for (Point p : ChessBoard.legalMoves) {
                     Pieces dest = getPiece(p.x * 64, p.y * 64);
-                    if (dest != null && selectedPiece != null && dest.isWhitePiece != selectedPiece.isWhitePiece) {
+                    if (dest != null && selectedPiece != null && dest.isWhite != selectedPiece.isWhite) {
                         // Draw red circle above the piece for capture
                         g.setColor(new Color(220, 30, 30, 200));
                         g.fillOval(p.x * 64 + 20, p.y * 64 + 4, 24, 24);
@@ -207,7 +207,7 @@ public class ChessBoard extends JPanel {
                         Pieces king = getKing(color);
                         if (king != null) {
                             g.setColor(new Color(255, 0, 0, 120));
-                            g.fillRect(king.xBoardPosition * 64, king.yBoardPosition * 64, 64, 64);
+                            g.fillRect(king.xp * 64, king.yp * 64, 64, 64);
                         }
                     }
                 }
@@ -228,10 +228,10 @@ public class ChessBoard extends JPanel {
                     if (p.name.equalsIgnoreCase("pawn")) {
                         ind = 5;
                     }
-                    if (!p.isWhitePiece) {
+                    if (!p.isWhite) {
                         ind += 6;
                     }
-                    g.drawImage(imgs[ind], p.xPixelPosition, p.yPixelPosition, this);
+                    g.drawImage(imgs[ind], p.x, p.y, this);
                 }
             }
         };
@@ -320,7 +320,7 @@ public class ChessBoard extends JPanel {
                 }
                 if (selectedPiece == null) {
                     Pieces p = getPiece(clickedX * 64, clickedY * 64);
-                    if (p != null && Pieces.isWhiteTurn == p.isWhitePiece) {
+                    if (p != null && Pieces.color == p.isWhite) {
                         selectedPiece = p;
                         ChessBoard.legalMoves.clear();
                         // Show legal moves
@@ -328,15 +328,15 @@ public class ChessBoard extends JPanel {
                             for (int y = 0; y < 8; y++) {
                                 if (selectedPiece.canMove(x, y)) {
                                     // Simulate the move
-                                    int oldX = selectedPiece.xBoardPosition, oldY = selectedPiece.yBoardPosition, oldx = selectedPiece.xPixelPosition, oldy = selectedPiece.yPixelPosition;
+                                    int oldX = selectedPiece.xp, oldY = selectedPiece.yp, oldx = selectedPiece.x, oldy = selectedPiece.y;
                                     Pieces captured = getPiece(x * 64, y * 64);
                                     int capturedIndex = -1;
                                     if (captured != null) capturedIndex = ps.indexOf(captured);
-                                    selectedPiece.xBoardPosition = x; selectedPiece.yBoardPosition = y; selectedPiece.xPixelPosition = x * 64; selectedPiece.yPixelPosition = y * 64;
+                                    selectedPiece.xp = x; selectedPiece.yp = y; selectedPiece.x = x * 64; selectedPiece.y = y * 64;
                                     if (captured != null) ps.remove(captured);
-                                    boolean leavesKingInCheck = isKingInCheck(selectedPiece.isWhitePiece);
+                                    boolean leavesKingInCheck = isKingInCheck(selectedPiece.isWhite);
                                     // Undo
-                                    selectedPiece.xBoardPosition = oldX; selectedPiece.yBoardPosition = oldY; selectedPiece.xPixelPosition = oldx; selectedPiece.yPixelPosition = oldy;
+                                    selectedPiece.xp = oldX; selectedPiece.yp = oldY; selectedPiece.x = oldx; selectedPiece.y = oldy;
                                     if (captured != null && capturedIndex != -1) ps.add(capturedIndex, captured);
                                     if (!leavesKingInCheck) {
                                         ChessBoard.legalMoves.add(new Point(x, y));
@@ -355,24 +355,24 @@ public class ChessBoard extends JPanel {
                     // Try to move to clicked square
                     if (selectedPiece.canMove(clickedX, clickedY)) {
                         // Simulate the move
-                        int oldX = selectedPiece.xBoardPosition, oldY = selectedPiece.yBoardPosition, oldx = selectedPiece.xPixelPosition, oldy = selectedPiece.yPixelPosition;
+                        int oldX = selectedPiece.xp, oldY = selectedPiece.yp, oldx = selectedPiece.x, oldy = selectedPiece.y;
                         Pieces captured = getPiece(clickedX * 64, clickedY * 64);
                         int capturedIndex = -1;
                         if (captured != null) capturedIndex = ps.indexOf(captured);
-                        selectedPiece.xBoardPosition = clickedX; selectedPiece.yBoardPosition = clickedY; selectedPiece.xPixelPosition = clickedX * 64; selectedPiece.yPixelPosition = clickedY * 64;
+                        selectedPiece.xp = clickedX; selectedPiece.yp = clickedY; selectedPiece.x = clickedX * 64; selectedPiece.y = clickedY * 64;
                         if (captured != null) ps.remove(captured);
-                        boolean leavesKingInCheck = isKingInCheck(selectedPiece.isWhitePiece);
+                        boolean leavesKingInCheck = isKingInCheck(selectedPiece.isWhite);
                         // Undo
-                        selectedPiece.xBoardPosition = oldX; selectedPiece.yBoardPosition = oldY; selectedPiece.xPixelPosition = oldx; selectedPiece.yPixelPosition = oldy;
+                        selectedPiece.xp = oldX; selectedPiece.yp = oldY; selectedPiece.x = oldx; selectedPiece.y = oldy;
                         if (captured != null && capturedIndex != -1) ps.add(capturedIndex, captured);
                         if (!leavesKingInCheck) {
                             selectedPiece.move(clickedX, clickedY);
                             trackerScreen();
                             // After move, check for checkmate or king capture
-                            boolean opponentIsWhite = !selectedPiece.isWhitePiece;
+                            boolean opponentIsWhite = !selectedPiece.isWhite;
                             System.out.println("Checkmate? " + isCheckmate(opponentIsWhite) + " for " + (opponentIsWhite ? "White" : "Black"));
                             if (isCheckmate(opponentIsWhite)) {
-                                winnerColor = selectedPiece.isWhitePiece ? "White" : "Black";
+                                winnerColor = selectedPiece.isWhite ? "White" : "Black";
                                 gameOver = true;
                                 showEndScreen();
                             } else if (isStalemate(opponentIsWhite)) {
@@ -393,7 +393,7 @@ public class ChessBoard extends JPanel {
                     } else {
                         // If clicked another of your pieces, reselect
                         Pieces p = getPiece(clickedX * 64, clickedY * 64);
-                        if (p != null && Pieces.isWhiteTurn == p.isWhitePiece) {
+                        if (p != null && Pieces.color == p.isWhite) {
                             selectedPiece = p;
                             ChessBoard.legalMoves.clear();
                             // Show legal moves for new selection
@@ -401,15 +401,15 @@ public class ChessBoard extends JPanel {
                                 for (int y = 0; y < 8; y++) {
                                     if (selectedPiece.canMove(x, y)) {
                                         // Simulate the move
-                                        int oldX = selectedPiece.xBoardPosition, oldY = selectedPiece.yBoardPosition, oldx = selectedPiece.xPixelPosition, oldy = selectedPiece.yPixelPosition;
+                                        int oldX = selectedPiece.xp, oldY = selectedPiece.yp, oldx = selectedPiece.x, oldy = selectedPiece.y;
                                         Pieces captured = getPiece(x * 64, y * 64);
                                         int capturedIndex = -1;
                                         if (captured != null) capturedIndex = ps.indexOf(captured);
-                                        selectedPiece.xBoardPosition = x; selectedPiece.yBoardPosition = y; selectedPiece.xPixelPosition = x * 64; selectedPiece.yPixelPosition = y * 64;
+                                        selectedPiece.xp = x; selectedPiece.yp = y; selectedPiece.x = x * 64; selectedPiece.y = y * 64;
                                         if (captured != null) ps.remove(captured);
-                                        boolean leavesKingInCheck = isKingInCheck(selectedPiece.isWhitePiece);
+                                        boolean leavesKingInCheck = isKingInCheck(selectedPiece.isWhite);
                                         // Undo
-                                        selectedPiece.xBoardPosition = oldX; selectedPiece.yBoardPosition = oldY; selectedPiece.xPixelPosition = oldx; selectedPiece.yPixelPosition = oldy;
+                                        selectedPiece.xp = oldX; selectedPiece.yp = oldY; selectedPiece.x = oldx; selectedPiece.y = oldy;
                                         if (captured != null && capturedIndex != -1) ps.add(capturedIndex, captured);
                                         if (!leavesKingInCheck) {
                                             ChessBoard.legalMoves.add(new Point(x, y));
@@ -442,7 +442,7 @@ public class ChessBoard extends JPanel {
         if (blackScoreLabel != null) blackScoreLabel.setText("Black's Score: " + Pieces.blackScore);
         if (whiteScoreLabel != null) whiteScoreLabel.setText("White's Score: " + Pieces.whiteScore);
         if (turnLabel != null) {
-            if (Pieces.isWhiteTurn) {
+            if (Pieces.color) {
                 turnLabel.setText("White's Turn");
                 turnLabel.setBackground(Color.BLUE);
             } else {
@@ -459,7 +459,7 @@ public class ChessBoard extends JPanel {
                 endText.setText("Stalemate! The game is a draw.");
             } else {
                 // Use winnerColor if set, otherwise fallback to turn logic
-                String winColor = winnerColor != null ? winnerColor : (Pieces.isWhiteTurn ? "Black" : "White");
+                String winColor = winnerColor != null ? winnerColor : (Pieces.color ? "Black" : "White");
                 int winScore = winColor.equals("White") ? Pieces.whiteScore : Pieces.blackScore;
                 endText.setText(winColor + " Wins With " + winScore + " Points!");
             }
@@ -473,7 +473,7 @@ public class ChessBoard extends JPanel {
         int xp = x/64;
         int yp = y/64;
         for(Pieces p : ps){
-            if(p.xBoardPosition == xp&&p.yBoardPosition ==yp){
+            if(p.xp == xp&&p.yp==yp){
                 return p;
             }
         }
@@ -483,7 +483,7 @@ public class ChessBoard extends JPanel {
         int xp = x/64;
         int yp = y/64;
         for(Pieces p : ps){
-            if(p.xBoardPosition == xp&&p.yBoardPosition ==yp){
+            if(p.xp == xp&&p.yp==yp){
                 return p.name;
             }
         }
@@ -497,7 +497,7 @@ public class ChessBoard extends JPanel {
     // Utility: Find the king for a color
     public static Pieces getKing(boolean isWhite) {
         for (Pieces p : ps) {
-            if (p.name.equalsIgnoreCase("king") && p.isWhitePiece == isWhite) return p;
+            if (p.name.equalsIgnoreCase("king") && p.isWhite == isWhite) return p;
         }
         return null;
     }
@@ -508,7 +508,7 @@ public class ChessBoard extends JPanel {
             return false;
         }
         for (Pieces p : ps) {
-            if (p.isWhitePiece != isWhite && p.canMove(king.xBoardPosition, king.yBoardPosition, true)) {
+            if (p.isWhite != isWhite && p.canMove(king.xp, king.yp, true)) {
                 return true;
             }
         }
@@ -520,20 +520,20 @@ public class ChessBoard extends JPanel {
             return false;
         }
         for (Pieces p : ps) {
-            if (p.isWhitePiece == isWhite) {
+            if (p.isWhite == isWhite) {
                 for (int x = 0; x < 8; x++) {
                     for (int y = 0; y < 8; y++) {
                         if (p.canMove(x, y)) {
                             // Try the move
-                            int oldX = p.xBoardPosition, oldY = p.yBoardPosition, oldx = p.xPixelPosition, oldy = p.yPixelPosition;
+                            int oldX = p.xp, oldY = p.yp, oldx = p.x, oldy = p.y;
                             Pieces captured = getPiece(x * 64, y * 64);
                             int capturedIndex = -1;
                             if (captured != null) capturedIndex = ps.indexOf(captured);
-                            p.xBoardPosition = x; p.yBoardPosition = y; p.xPixelPosition = x * 64; p.yPixelPosition = y * 64;
+                            p.xp = x; p.yp = y; p.x = x * 64; p.y = y * 64;
                             if (captured != null) ps.remove(captured);
                             boolean stillInCheck = isKingInCheck(isWhite);
                             // Undo
-                            p.xBoardPosition = oldX; p.yBoardPosition = oldY; p.xPixelPosition = oldx; p.yPixelPosition = oldy;
+                            p.xp = oldX; p.yp = oldY; p.x = oldx; p.y = oldy;
                             if (captured != null && capturedIndex != -1) ps.add(capturedIndex, captured);
                             if (!stillInCheck) {
                                 return false;
@@ -549,20 +549,20 @@ public class ChessBoard extends JPanel {
     public static boolean isStalemate(boolean isWhite) {
         if (isKingInCheck(isWhite)) return false;
         for (Pieces p : ps) {
-            if (p.isWhitePiece == isWhite) {
+            if (p.isWhite == isWhite) {
                 for (int x = 0; x < 8; x++) {
                     for (int y = 0; y < 8; y++) {
                         if (p.canMove(x, y)) {
                             // Simulate the move
-                            int oldX = p.xBoardPosition, oldY = p.yBoardPosition, oldx = p.xPixelPosition, oldy = p.yPixelPosition;
+                            int oldX = p.xp, oldY = p.yp, oldx = p.x, oldy = p.y;
                             Pieces captured = getPiece(x * 64, y * 64);
                             int capturedIndex = -1;
                             if (captured != null) capturedIndex = ps.indexOf(captured);
-                            p.xBoardPosition = x; p.yBoardPosition = y; p.xPixelPosition = x * 64; p.yPixelPosition = y * 64;
+                            p.xp = x; p.yp = y; p.x = x * 64; p.y = y * 64;
                             if (captured != null) ps.remove(captured);
                             boolean leavesKingInCheck = isKingInCheck(isWhite);
                             // Undo
-                            p.xBoardPosition = oldX; p.yBoardPosition = oldY; p.xPixelPosition = oldx; p.yPixelPosition = oldy;
+                            p.xp = oldX; p.yp = oldY; p.x = oldx; p.y = oldy;
                             if (captured != null && capturedIndex != -1) ps.add(capturedIndex, captured);
                             if (!leavesKingInCheck) return false;
                         }
