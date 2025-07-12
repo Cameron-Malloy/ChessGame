@@ -1012,16 +1012,6 @@ public class ChessBoard extends JPanel {
         
         return score;
     }
-    // Helper to determine whose turn it is
-    private static boolean isWhiteTurnToMove() {
-        int whiteCount = 0, blackCount = 0;
-        for (Pieces p : ps) {
-            if (p.isWhite) whiteCount++;
-            else blackCount++;
-        }
-        // If even, it's white's turn (assuming white starts)
-        return (whiteCount + blackCount) % 2 == 0;
-    }
     
     // Checkmate detection bonus - encourages moves that lead to checkmate
     public static int getCheckmateDetectionBonus() {
@@ -1224,9 +1214,9 @@ public class ChessBoard extends JPanel {
             for (Pieces p : piecesCopy) {
                 if (p.name.equalsIgnoreCase("pawn")) {
                     if (p.isWhite) {
-                        score += (7 - p.yp) * 100; // White pawn advancement
+                        score += (7 - p.yp) * 40; // White pawn advancement
                     } else {
-                        score -= p.yp * 100; // Black pawn advancement
+                        score -= p.yp * 40; // Black pawn advancement
                     }
                 }
             }
