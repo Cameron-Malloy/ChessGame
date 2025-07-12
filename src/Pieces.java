@@ -71,14 +71,20 @@ public class Pieces extends ChessBoard {
     public void move(int xp, int yp) {
         // Pawn promotion
         if (name.equalsIgnoreCase("pawn") && ((isWhite && yp == 0) || (!isWhite && yp == 7))) {
-            // Show promotion dialog
-            String[] options = {"Queen", "Rook", "Bishop", "Knight"};
-            int choice = JOptionPane.showOptionDialog(null, "Choose promotion:", "Pawn Promotion",
-                    JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-            if (choice == 1) this.name = "rook";
-            else if (choice == 2) this.name = "bishop";
-            else if (choice == 3) this.name = "knight";
-            else this.name = "queen";
+            // Auto-promote to queen for AI (black pieces), show dialog for human (white pieces)
+                if (!isWhite && ChessBoard.gameMode.equals("AI")) {
+                // AI automatically promotes to queen
+                this.name = "queen";
+            } else {
+                // Human player gets to choose
+                String[] options = {"Queen", "Rook", "Bishop", "Knight"};
+                int choice = JOptionPane.showOptionDialog(null, "Choose promotion:", "Pawn Promotion",
+                        JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                if (choice == 1) this.name = "rook";
+                else if (choice == 2) this.name = "bishop";
+                else if (choice == 3) this.name = "knight";
+                else this.name = "queen";
+            }
         }
         // Castling logic
         if (name.equalsIgnoreCase("king") && Math.abs(xp - this.xp) == 2) {
@@ -163,15 +169,22 @@ public class Pieces extends ChessBoard {
      * Remove this piece from the board and update score.
      */
     public void kill() {
-        if (ChessBoard.getPiece(xp * 64, yp * 64).isWhite == true) {
-            blackScore += Pieces.getPiece(xp * 64, yp * 64).pointsWorth;
-            trackerScreen();
-        } else {
-            whiteScore += Pieces.getPiece(xp * 64, yp * 64).pointsWorth;
-            trackerScreen();
-        }
-        size = size - 1;
+        // Store the score before removing the piece
+        int scoreToAdd = this.pointsWorth;
+        boolean isWhitePiece = this.isWhite;
+        
+        // Remove the piece from the list
         ps.remove(this);
+        
+        // Update the score
+        if (isWhitePiece) {
+            blackScore += scoreToAdd;
+        } else {
+            whiteScore += scoreToAdd;
+        }
+        
+        // Update the display
+        trackerScreen();
     }
 
     /**
