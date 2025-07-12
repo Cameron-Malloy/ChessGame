@@ -65,7 +65,7 @@ public class ChessBoard extends JPanel {
         // Initialize game pieces
         Robot bot = new Robot();
         int ind = 0;
-        BufferedImage all = ImageIO.read(new File("resources/chess_pieces.png"));
+        BufferedImage all = ImageIO.read(new File("ChessGame/resources/chess_pieces.png"));
         Image[] imgs = new Image[12];
 
         for (int y = 0; y < 400; y += 200) {
@@ -816,10 +816,10 @@ public class ChessBoard extends JPanel {
             if (!leavesKingInCheck) {
                 if (isWhiteTurn) {
                     bestScore = Math.max(bestScore, score);  // White maximizes
-                    beta = Math.min(beta, score);
+                    alpha = Math.max(alpha, bestScore);
                 } else {
                     bestScore = Math.min(bestScore, score);  // Black minimizes
-                    alpha = Math.max(alpha, score);
+                    beta = Math.min(beta, bestScore);
                 }
                 // Alpha-beta pruning
                 if (beta <= alpha) {
@@ -839,7 +839,7 @@ public class ChessBoard extends JPanel {
         }
         return bestScore;
     }
-    
+
     // Quiescence search to prevent horizon effect
     public static int quiescenceSearch(boolean isWhiteTurn, int alpha, int beta) {
         int standPat = evaluateBoard();
