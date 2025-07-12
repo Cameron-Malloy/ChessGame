@@ -1,6 +1,6 @@
 # Chess Game with AI
 
-A complete GUI chess game implementation in Java with my ehhhhhhh attempt at an AI opponent. 
+A complete GUI chess game implementation in Java with my ehhhhhhh attempt at an AI opponent. Please give feedback if you have any. 🐡
 
 ## Game Controls
 
@@ -115,7 +115,7 @@ ChessGame/
 └── README.md             # This file
 ```
 
-## Future Enhancements
+## To DOs Type Beat
 
 Potential improvements for future versions that I may do (anyone can do these if they want though lol):
 - Opening book integration
