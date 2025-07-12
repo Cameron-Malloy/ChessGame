@@ -984,18 +984,18 @@ public class ChessBoard extends JPanel {
             }
             material += p.isWhite ? value : -value;
         }
-        score += material * 10;  // Make material much more important
+        score += material * 15;  // Material is king
         
-        int kingSafety = getKingSafetyBonus() * 1;
-        int hangingPenalty = getHangingPiecePenalty() * 1;
-        int tactical = getTacticalEvaluation() * 2;
-        int center = getCenterControlBonus() * 1;
+        int kingSafety = getKingSafetyBonus() * 3;
+        int hangingPenalty = getHangingPiecePenalty() * 3;
+        int tactical = getTacticalEvaluation() * 5;
+        int center = getCenterControlBonus() * 2;
         int positional = getPositionalBonus() * 1;
         int mobility = getMobilityBonus() * 1;
         int opening = getOpeningDevelopmentBonus() * 1;
-        int queenSafety = getQueenSafetyBonus() * 1;
-        int endgame = getEndgameEvaluation();
-        int checkmate = getCheckmateDetectionBonus();
+        int queenSafety = getQueenSafetyBonus() * 2;
+        int endgame = getEndgameEvaluation() * 1;
+        int checkmate = getCheckmateDetectionBonus() * 10;
         
         score += kingSafety;
         score += hangingPenalty;
@@ -1430,18 +1430,18 @@ public class ChessBoard extends JPanel {
                             }
                             
                             if (isSafeCapture) {
-                                moveTacticalScore = targetValue / 2; // Base capture bonus
+                                moveTacticalScore = targetValue * 2; // Base capture bonus
                                 
 
                                 
                                 // Extra bonus for capturing with much less valuable piece
                                 if (targetValue > attackerValue * 2) {
-                                    moveTacticalScore += targetValue / 4;
+                                    moveTacticalScore += targetValue;
                                 }
                                 
                                 // Bonus for capturing undefended pieces
                                 if (!isDefended) {
-                                    moveTacticalScore += targetValue / 4;
+                                    moveTacticalScore += targetValue;
                                 }
                             }
                         }
@@ -1467,7 +1467,7 @@ public class ChessBoard extends JPanel {
                         // Check for queen attacks
                         for (Pieces queenTarget : piecesCopy) {
                             if (queenTarget != p && queenTarget.isWhite != p.isWhite && queenTarget.name.equalsIgnoreCase("queen") && p.canMove(queenTarget.xp/64, queenTarget.yp/64)) {
-                                moveTacticalScore += 100; // Queen attack bonus
+                                moveTacticalScore += 140; // Queen attack bonus
                             }
                         }
                         
@@ -1673,8 +1673,10 @@ public class ChessBoard extends JPanel {
             return 5; // Deep search for simplified positions
         } else if (totalPieces <= 16) {
             return 4; // Medium-deep search for middle game
+        } else if (totalPieces <= 25) {
+            return 3; // Start-ish depth
         } else {
-            return 3; // Standard depth for opening/middle game
+            return 2; // Standard depth for opening/middle game
         }
     }
     
