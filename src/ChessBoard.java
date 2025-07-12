@@ -751,7 +751,7 @@ public class ChessBoard extends JPanel {
         }
     }
 
-    // Optimized minimax with alpha-beta pruning for 800-1000 ELO
+    // Optimized minimax with alpha-beta pruning 
     public static int minimax(int depth, boolean isWhiteTurn, int alpha, int beta) {
         if (depth == 0) {
             return quiescenceSearch(isWhiteTurn, alpha, beta);
